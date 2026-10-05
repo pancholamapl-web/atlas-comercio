@@ -1,0 +1,9 @@
+{
+ "meta": {"year": 2022, "source": "datos de ejemplo (reemplazar con el pipeline BACI)", "illustrative": true},
+ "countries": {
+  "CHL": {"name":"Chile","exports_usd_bn":98.0,"top_products":[{"name":"Cobre refinado (7403)","share":0.28},{"name":"Minerales de cobre (2603)","share":0.20},{"name":"Salmón (0304)","share":0.06}],"partners":[{"name":"China","share":0.38},{"name":"Estados Unidos","share":0.15},{"name":"Japón","share":0.08}]},
+  "PER": {"name":"Peru","exports_usd_bn":66.0,"top_products":[{"name":"Minerales de cobre (2603)","share":0.25},{"name":"Oro (7108)","share":0.14},{"name":"Harina de pescado (2301)","share":0.05}],"partners":[{"name":"China","share":0.30},{"name":"Estados Unidos","share":0.13},{"name":"Canadá","share":0.07}]},
+  "BRA": {"name":"Brazil","exports_usd_bn":335.0,"top_products":[{"name":"Soja (1201)","share":0.14},{"name":"Petróleo crudo (2709)","share":0.12},{"name":"Mineral de hierro (2601)","share":0.11}],"partners":[{"name":"China","share":0.27},{"name":"Estados Unidos","share":0.11},{"name":"Argentina","share":0.05}]},
+  "DEU": {"name":"Germany","exports_usd_bn":1650.0,"top_products":[{"name":"Automóviles (8703)","share":0.10},{"name":"Medicamentos (3004)","share":0.05},{"name":"Maquinaria (8479)","share":0.03}],"partners":[{"name":"Estados Unidos","share":0.10},{"name":"China","share":0.07},{"name":"Francia","share":0.07}]}
+ }
+}

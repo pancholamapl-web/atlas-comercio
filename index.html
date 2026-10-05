@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas de comercio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=Public+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f5;--ink:#12263a;--sea:#dce9f0;--land:#a9c0d0;--hot:#e0a100;--has:#5f8aa6;--line:#c5d3dd}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 "Public Sans",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+header{padding:20px 24px 8px}
+h1{font:700 2rem/1.1 "Newsreader",serif;margin:0}
+header p{margin:4px 0 0;max-width:60ch}
+main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;padding:8px 24px 24px}
+#map{background:var(--sea);border-radius:6px;min-height:360px}
+#map svg{width:100%;height:auto;display:block}
+.country{fill:var(--land);stroke:var(--bg);stroke-width:.5;cursor:pointer}
+.country.has{fill:var(--has)}
+.country:hover,.country:focus{fill:var(--hot);outline:none}
+.country.sel{fill:var(--hot);stroke:var(--ink);stroke-width:1}
+aside{background:#fff;border:1px solid var(--line);border-radius:6px;padding:16px;align-self:start}
+aside h2{font:700 1.4rem "Newsreader",serif;margin:0 0 4px}
+.big{font-size:1.6rem;font-weight:600}
+.row{margin:8px 0}
+.row div:first-child{display:flex;justify-content:space-between;font-size:.9rem}
+.bar{height:6px;background:var(--bg);border-radius:3px;margin-top:2px}
+.bar i{display:block;height:100%;background:var(--has);border-radius:3px}
+h3{font-size:1rem;margin:16px 0 0}
+.note{font-size:.8rem;color:#52667a;margin-top:12px}
+@media(max-width:800px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>Atlas de comercio</h1>
+<p>Haz clic en un país para ver sus exportaciones, productos principales y socios. Los países con datos aparecen en azul.</p>
+</header>
+<main>
+<div id="map" aria-label="Mapa mundial"></div>
+<aside id="panel"><p>Selecciona un país en el mapa.</p></aside>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script>
+// Nombres de world-atlas que difieren de los de BACI/Comtrade (completar según haga falta)
+const ALIASES = {"USA":"United States of America","Russian Federation":"Russia","Rep. of Korea":"South Korea","Türkiye":"Turkey"};
+const fmt = d3.format(",.1f"), pct = d3.format(".1%");
+Promise.all([
+  d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"),
+  d3.json("data/countries.json")
+]).then(([world, data]) => {
+  const byName = {};
+  Object.values(data.countries).forEach(c => byName[ALIASES[c.name] || c.name] = c);
+  const feats = topojson.feature(world, world.objects.countries).features;
+  const proj = d3.geoNaturalEarth1().fitWidth(960, {type:"Sphere"});
+  const path = d3.geoPath(proj);
+  const svg = d3.select("#map").append("svg").attr("viewBox", "0 0 960 500");
+  svg.selectAll("path").data(feats).join("path")
+    .attr("class", d => "country" + (byName[d.properties.name] ? " has" : ""))
+    .attr("d", path).attr("tabindex", 0)
+    .on("click keydown", function(e, d){
+      if (e.type === "keydown" && e.key !== "Enter") return;
+      svg.selectAll(".sel").classed("sel", false);
+      d3.select(this).classed("sel", true);
+      show(d.properties.name, byName[d.properties.name], data.meta);
+    })
+    .append("title").text(d => d.properties.name);
+}).catch(err => {
+  document.getElementById("panel").innerHTML = "<p>No se pudieron cargar los datos. Si abres el archivo directamente, usa un servidor local: <code>python -m http.server</code>.</p>";
+  console.error(err);
+});
+function show(name, c, meta){
+  const p = document.getElementById("panel");
+  if (!c){ p.innerHTML = `<h2>${name}</h2><p>Aún no hay datos cargados para este país.</p>`; return; }
+  const rows = (list, key) => list.map(x => `<div class="row"><div><span>${x.name}</span><span>${pct(x.share)}</span></div><div class="bar"><i style="width:${Math.min(100, x.share*100*3)}%"></i></div></div>`).join("");
+  p.innerHTML = `<h2>${name}</h2>
+    <div class="big">US$ ${fmt(c.exports_usd_bn)} mil millones</div>
+    <div>exportaciones totales, ${meta.year}</div>
+    <h3>Productos principales</h3>${rows(c.top_products)}
+    <h3>Socios principales</h3>${rows(c.partners)}
+    <p class="note">${meta.illustrative ? "Datos de ejemplo, solo para probar la interfaz. " : ""}Fuente: ${meta.source}.</p>`;
+}
+</script>
+</body>
+</html>
